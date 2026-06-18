@@ -1,0 +1,75 @@
+version: '3'
+
+services:
+
+  vgnms:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vgnms
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - rabbitmq
+      - mongodb
+    volumes:
+      - ./dist:/root/dist
+      # - ./rbac_model.conf:/root/rbac_model.conf
+      - ./.env:/root/.env
+      - ./media:/root/media
+      - /etc/letsencrypt/:/etc/letsencrypt/
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: $MQTT_USERNAME
+      RABBITMQ_DEFAULT_PASS: $MQTT_PASSWORD
+    expose:
+      - 1883
+      - 8883
+      - 8884
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "1883:1883"
+      - "8883:8883"
+      - "8884:8884"
+    volumes:
+        - /etc/letsencrypt/:/etc/letsencrypt/
+        - ./rabbitmq/docker-volume-data/:/data/
+        - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+        - ./rabbitmq/$RABBITMQ_CONFIG:/etc/rabbitmq/rabbitmq.conf
+        - ./tls/:/etc/rabbitmq/ssl/
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $MONGODB_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $MONGODB_PASSWORD
+    expose:
+      - 27017
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb/docker-volume-data:/data/db/
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - 9081:8081
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: $MONGODB_USERNAME
+      ME_CONFIG_BASICAUTH_PASSWORD: $MONGODB_PASSWORD
+      ME_CONFIG_MONGODB_URL: mongodb://$MONGODB_USERNAME:$MONGODB_PASSWORD@mongodb:27017/
+
+networks:
+  default:
+    driver: bridge
