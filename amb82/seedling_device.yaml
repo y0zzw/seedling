@@ -1,0 +1,51 @@
+commands:
+  update_parameters:
+    downlink_fields:
+      closetime:
+        type: int
+      counter:
+        type: int
+      dayinterval:
+        type: int
+      endtime:
+        type: int
+      light:
+        type: int
+      starttime:
+        type: int
+      waittime:
+        type: int
+      water:
+        type: array
+      weekday:
+        required: true
+        type: array
+data_fields:
+  brightness:
+    type: float
+  device_id:
+    required: true
+    type: string
+  device_name:
+    maxlength: 30
+    required: true
+    type: string
+  humidity:
+    type: float
+  latitude:
+    max: 90
+    min: -90
+    type: float
+  longitude:
+    max: 180
+    min: -180
+    type: float
+  temperature:
+    type: float
+display_name: Seedling Device
+query:
+  temperature:
+    downlink_fields:
+      band:
+        required: true
+        type: int
